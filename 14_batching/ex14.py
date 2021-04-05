@@ -39,33 +39,38 @@ def initialise_weights(n_input_variables, n_hidden_nodes, n_classes):
 
   return (w1, w2)
 
-def report(iteration, X_train, Y_train, X_test, Y_test, w1, w2):
+def prepare_batches(X_train, Y_train, batch_size):
+  x_batches = []
+  y_batches = []
+  n_examples = X_train.shape[0]
+  for batch in range(0, n_examples, batch_size):
+    batch_end = batch + batch_size
+    x_batches.append(X_train[batch:batch_end])
+    y_batches.append(Y_train[batch:batch_end])
+  return (x_batches, y_batches)
+
+def report(epoch, batch, X_train, Y_train, X_test, Y_test, w1, w2):
   y_hat, _ = forward(X_train, w1, w2)
   training_loss = loss(Y_train, y_hat)
   classifications = classify(X_test, w1, w2)
   accuracy = np.average(classifications == Y_test) * 100
-  print("Iteration: %5d, Loss: %.8f, Accuracy: %.2f%%" % (iteration, training_loss, accuracy))
+  print("Iteration: %5d-%d > Loss: %.8f, Accuracy: %.2f%%" % (epoch, batch, training_loss, accuracy))
 
-def train(X_train, Y_train, X_test, Y_test, n_hidden_nodes, iterations, lr):
+def train(X_train, Y_train, X_test, Y_test, n_hidden_nodes, epochs, batch_size, lr):
   n_input_variables = X_train.shape[1]
   n_classes = Y_train.shape[1]
+
   w1, w2 = initialise_weights(n_input_variables, n_hidden_nodes, n_classes)
-  for iteration in range(iterations):
-    y_hat, h = forward(X_train, w1, w2)
-    w1_gradient, w2_gradient = back(X_train, Y_train, y_hat, w2, h)
-    w1 = w1 - (w1_gradient * lr)
-    w2 = w2 - (w2_gradient * lr)
-    report(iteration, X_train, Y_train, X_test, Y_test, w1, w2)
+  x_batches, y_batches = prepare_batches(X_train, Y_train, batch_size)
+  for epoch in range(epochs):
+    for batch in range(len(x_batches)):
+      y_hat, h = forward(x_batches[batch], w1, w2)
+      w1_gradient, w2_gradient = back(x_batches[batch], y_batches[batch], y_hat, w2, h)
+      w1 = w1 - (w1_gradient * lr)
+      w2 = w2 - (w2_gradient * lr)
+      report(epoch, batch, X_train, Y_train, X_test, Y_test, w1, w2)
   return (w1, w2)
 
-import json
-
-#with open('weights.json') as f:
-#  weights = json.load(f)
-
-#w1, w2 = (np.array(weights[0]), np.array(weights[1]))
-
-import mnist
-w1, w2 = train(mnist.X_train, mnist.Y_train, mnist.X_test, mnist.Y_test, n_hidden_nodes=200, iterations=250, lr=0.01)
-
-#report(0, mnist.X_train, mnist.Y_train, mnist.X_test, mnist.Y_test, w1, w2)
+if __name__ == '__main__':
+  import mnist
+  w1, w2 = train(mnist.X_train, mnist.Y_train, mnist.X_test, mnist.Y_test, n_hidden_nodes=150, epochs=2, batch_size=20000, lr=0.01)

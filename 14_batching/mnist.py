@@ -1,5 +1,3 @@
-# An MNIST loader.
-
 import numpy as np
 import gzip
 import struct
