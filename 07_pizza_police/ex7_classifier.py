@@ -14,9 +14,10 @@ def classify(X, w):
 
 def loss(X, Y, w):
   y_hat = forward(X, w)
+  # instead of mean squared error, logarithmic loss is calculated
   first_term = Y * np.log(y_hat)
   second_term = (1 - Y) * np.log(1 - y_hat)
-  return -np.average(first_term * first_term)
+  return -np.average(first_term + second_term)
 
 def gradient(X, Y, w):
   return 2 * np.matmul(X.T, (forward(X, w) - Y)) / X.shape[0]
@@ -25,7 +26,7 @@ def train(X, Y, iterations,lr):
   w = np.zeros((X.shape[1], 1))
   for i in range(iterations):
     current_loss = loss(X, Y, w)
-    print("Iteration %4d => Loss: %.6f" % (i, current_loss))
+    print("Iteration %4d => Loss: %.20f" % (i, current_loss))
     w -= gradient(X, Y, w) * lr
   return w
 
