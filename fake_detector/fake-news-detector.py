@@ -31,5 +31,7 @@ def main():
     score=accuracy_score(y_test,y_pred)
     print(f'Accuracy: {round(score*100,2)}%')
 
+    print(confusion_matrix(y_test, y_pred, labels=['FAKE', 'REAL']))
+
 if __name__ == "__main__":
     main()
