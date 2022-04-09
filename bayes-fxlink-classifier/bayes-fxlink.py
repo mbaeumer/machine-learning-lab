@@ -8,11 +8,32 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import confusion_matrix, accuracy_score
 
+def print_predicted_categories(predicted_categories, x_test):
+    index = 0
+    while index < len(predicted_categories):
+        print(x_test.values[index])
+        print(predicted_categories[index])
+        index = index + 1
+
+def show_confusion_matrix(predicted_categories, y_test, uniq):
+    sns.set()
+    # plot the confusion matrix
+    mat = confusion_matrix(y_test, predicted_categories)
+    sns.heatmap(mat.T, square=True, annot=True, fmt="d", xticklabels=uniq,
+                yticklabels=uniq)
+    plt.xlabel("true labels")
+    plt.ylabel("predicted label")
+    plt.show()
+
+def print_stats(unique_classes, x_train, x_test, predicted_categories):
+    print("We have {} unique classes".format(len(unique_classes)))
+    print("We have {} training samples".format(len(x_train)))
+    print("We have {} test samples".format(len(x_test)))
+    print("We have {} predicted categories".format(len(predicted_categories)))
+
 
 def main():
-    sns.set()
-    print("Hello")
-    df = pd.read_csv("/Users/martinbaumer/Downloads/fxlink-data-stackoverflog.csv")
+    df = pd.read_csv("/Users/martinbaumer/Downloads/fxlink-data-export-misc.csv")
     df.shape
     df.head()
     categories = df.category
@@ -20,10 +41,6 @@ def main():
     uniq = pd.Series(categories.values).unique()
 
     x_train, x_test, y_train, y_test = train_test_split(df['text'], df['category'], test_size=0.2, random_state=7)
-
-    print("We have {} unique classes".format(len(uniq)))
-    print("We have {} training samples".format(len(x_train)))
-    print("We have {} test samples".format(len(x_test)))
 
     #tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
     # DataFlair - Fit and transform train set, transform test set
@@ -38,25 +55,13 @@ def main():
     # Predict the categories of the test data
     predicted_categories = model.predict(x_test)
 
-    print("We have {} unique classes".format(len(uniq)))
-    print("We have {} training samples".format(len(x_train)))
-    print("We have {} test samples".format(len(x_test)))
-    print("We have {} predicted categories".format(len(predicted_categories)))
+    print_stats(uniq, x_train, x_test, predicted_categories)
 
 
-    index = 0
-    while index < len(predicted_categories):
-        print(x_test.values[index])
-        print(predicted_categories[index])
-        index = index + 1
+    print_predicted_categories(predicted_categories, x_test)
 
     # plot the confusion matrix
-    mat = confusion_matrix(y_test, predicted_categories)
-    sns.heatmap(mat.T, square=True, annot=True, fmt="d", xticklabels=uniq,
-                yticklabels=uniq)
-    plt.xlabel("true labels")
-    plt.ylabel("predicted label")
-    plt.show()
+    show_confusion_matrix(predicted_categories, y_test, uniq)
 
     print("The accuracy is {}".format(accuracy_score(y_test, predicted_categories)))
 
